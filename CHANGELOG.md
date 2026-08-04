@@ -8,9 +8,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Deterministic v1 book manifests, cross-book catalog rebuilding, and bounded
-  tag/facet/scripture/person queries.
-- Security scanning for theology supporting files and `book-index.json`.
+- **v1 book metadata manifests** — generated books now have a validated
+  `book-index.json` SSOT with canonical tags, multilingual labels, relevance,
+  explicit/inferred basis, and book/chapter facets.
+- **Cross-book catalog tooling** — added deterministic `catalog.json` and
+  human-readable `INDEX.md` rebuilding plus bounded tag, term, scripture, locus,
+  person, and book queries with explicit AND/OR semantics.
+- **Existing-book migration tooling** — added a repeatable migration utility for
+  adding chapter frontmatter, Book Metadata projections, and complete manifests
+  to existing generated books.
+
+### Changed
+- The generator specification now requires canonical tagging, chapter
+  frontmatter projections, manifest/projection validation, full catalog rebuilds
+  after generation or fold-in, and a migration-required failure for books that
+  have no manifest.
+- Catalog generation is strict and deterministic: it rejects malformed fields,
+  duplicate IDs, invalid chapter paths, missing files, and symlinks, then uses
+  atomic output replacement to avoid partial global indexes.
+- Search defaults to `primary` and `supporting` occurrences; incidental
+  `mention` results require an explicit opt-in. Canonical IDs remain separate
+  from display labels and aliases.
+
+### Security
+- The generated-skill scanner now covers theology supporting files
+  (`lexicon.md`, `core_arguments.md`, and `methodology.md`) and validates and
+  recursively scans strings inside `book-index.json`.
+- Invalid manifest JSON and non-object machine-readable payloads fail closed
+  before catalog registration.
+
+### Documentation
+- README and architecture documentation now describe the manifest SSOT,
+  cross-book catalog/query workflow, security surface, and repository tools.
 
 ## [1.3.0] - 2026-07-30
 
