@@ -10,6 +10,7 @@ OUTPUT_DIR = Path(
 )
 OUTPUT_TEXT = OUTPUT_DIR / "full_text.txt"
 OUTPUT_META = OUTPUT_DIR / "metadata.json"
+OUTPUT_SEGMENTS = OUTPUT_DIR / "segments.json"
 
 WORDS_PER_TOKEN = 0.75  # approximate
 

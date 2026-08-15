@@ -15,10 +15,17 @@ def extract_with_ebooklib(epub_path: str) -> str | None:
 
         book = epub.read_epub(epub_path)
         parts = []
-        for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
+        # ``get_items_of_type`` is manifest order, while the EPUB spine is the
+        # reading order.  Prefer the latter and retain its boundaries.
+        spine_ids = [item_id for item_id, _ in book.spine]
+        items = [book.get_item_with_id(item_id) for item_id in spine_ids]
+        items = [item for item in items if item is not None]
+        if not items:
+            items = list(book.get_items_of_type(ebooklib.ITEM_DOCUMENT))
+        for item in items:
             soup = BeautifulSoup(item.get_content(), "html.parser")
             parts.append(soup.get_text(separator="\n"))
-        return "\n\n".join(parts)
+        return "\f".join(parts)
     except ImportError:
         return None
     except Exception as e:
@@ -105,7 +112,7 @@ def extract_with_zipfile(epub_path: str) -> str | None:
                     parts.append(parser.get_text())
                 except Exception:
                     continue
-            return "\n\n".join(parts) if parts else None
+            return "\f".join(parts) if parts else None
     except Exception as e:
         print(f"  [warn] extract_with_zipfile failed: {type(e).__name__}: {e}", file=sys.stderr)
         return None
@@ -122,4 +129,3 @@ def count_epub_chapters(epub_path: str) -> int:
             return len(re.findall(r'<itemref\b', opf_text))
     except Exception:
         return 0
-

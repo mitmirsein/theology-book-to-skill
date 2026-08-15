@@ -23,7 +23,7 @@ SUPPORTING_FILENAMES = (
     "core_arguments.md",
     "methodology.md",
 )
-MACHINE_READABLE_FILENAMES = ("book-index.json",)
+MACHINE_READABLE_FILENAMES = ("book-index.json", "claim-index.json")
 
 _INVISIBLE_CODEPOINTS = {
     0x200B,  # zero width space
@@ -283,7 +283,7 @@ def scan_generated_skill(path: Path) -> list[Finding]:
     root = skill_dir.resolve(strict=True)
     findings: list[Finding] = []
     for relative_path, text in _read_skill_files(root, files):
-        if relative_path == "book-index.json":
+        if relative_path in MACHINE_READABLE_FILENAMES:
             try:
                 parsed = json.loads(text)
             except json.JSONDecodeError as exc:

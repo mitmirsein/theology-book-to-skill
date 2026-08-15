@@ -25,8 +25,9 @@ def clean_pdftotext(text: str) -> str:
                 edge[nb[0]] += 1
                 edge[nb[-1]] += 1
         boiler = {ln for ln, c in edge.items() if c > len(pages) / 2}
-        kept = []
+        kept_pages = []
         for p in pages:
+            kept = []
             lines = p.splitlines()
             nb_idx = [i for i, ln in enumerate(lines) if ln.strip()]
             first = nb_idx[0] if nb_idx else None
@@ -39,7 +40,10 @@ def clean_pdftotext(text: str) -> str:
                 if i in (first, last) and _PDF_PAGE_NUM.match(s):
                     continue
                 kept.append(ln)
-        text = "\n".join(kept)
+            kept_pages.append("\n".join(kept))
+        # Preserve the original page boundary after cleaning.  It is consumed by
+        # provenance.py and is harmless to legacy text consumers.
+        text = "\f".join(kept_pages)
     else:
         text = text.replace("\f", "\n")
     # ponytail: naive dehyphenation; may join a genuinely-hyphenated wrapped
@@ -75,7 +79,9 @@ def extract_with_pypdf(pdf_path: str) -> str | None:
                     text_parts.append(page.extract_text() or "")
                 except Exception:
                     text_parts.append("")
-        return "\n".join(text_parts)
+        # pypdf exposes pages separately; retain that information for locator
+        # generation instead of flattening it away.
+        return "\f".join(text_parts)
     except ImportError:
         return None
     except Exception as e:

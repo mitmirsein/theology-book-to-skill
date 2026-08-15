@@ -16,6 +16,7 @@ document into clean text + metadata; the agent turns that into a structured skil
             │  output → <tempdir>/book_skill_work/                            │
             │    full_text.txt   (all sources merged, source-marked)          │
             │    metadata.json   (pages, words, tokens, chapters, ToC)        │
+            │    segments.json   (portable source locators + char ranges)      │
             └────────────────────────────────────────────────────────────────┘
                                    │
                                    ▼
@@ -44,8 +45,10 @@ document into clean text + metadata; the agent turns that into a structured skil
                   patterns.md      techniques
                   cheatsheet.md    decision rules / trees / trade-offs / tells
                   book-index.json  validated machine-readable metadata SSOT
+                  claim-index.json evidence-backed atomic claims (optional v1)
                 <SKILLS_HOME>/
                   catalog.json     deterministic derived reverse index
+                  claim-catalog.json deterministic derived claim reverse index
                   INDEX.md         human-readable derived matrix
 ```
 
@@ -76,12 +79,17 @@ document into clean text + metadata; the agent turns that into a structured skil
 | `book_to_skill/config.py` | supported extensions, output paths, dependency map |
 | `book_to_skill/dependencies.py` | optional-dependency probing + `--check` |
 | `book_to_skill/sanitize.py` | strips zero-width / Unicode-tag-block characters from extracted text (see Security) |
+| `book_to_skill/provenance.py` | SHA-256 source identity and portable segment locators for `segments.json` |
 | `tools/discovery_tax.py` | measures token cost vs context-dump / discovery loop |
 | `tools/validate_skill.py` | checks a generated SKILL.md against host rules (`--lens claude\|copilot\|amp`) |
 | `tools/scan_generated_skill.py` | advisory prompt-injection scan of a generated skill (see Security) |
 | `book_to_skill/catalog.py` | v1 manifest validation, deterministic catalog model, rendering, and queries |
+| `book_to_skill/claims.py` | v1 claim-index validation and evidence-locator contract |
+| `book_to_skill/claim_catalog.py` | deterministic cross-book claim catalog and bounded claim query model |
 | `tools/build_book_catalog.py` | strict all-books catalog rebuild (`--check` for read-only validation) |
 | `tools/query_book_catalog.py` | bounded tag/facet/scripture/person query output |
+| `tools/build_claim_catalog.py` | build or validate the derived `claim-catalog.json` |
+| `tools/query_claim_catalog.py` | bounded evidence-backed claim retrieval |
 | `SKILL.md` | the generator spec (Steps 0–10 + fold-in workflow) |
 
 ## Security
@@ -104,7 +112,8 @@ is layered:
   the generator (Step 9.5) that flags instruction-override phrases, model-control
   tags, residual invisible Unicode, authority-widening frontmatter, and
   exfiltration-shaped content across the generated `SKILL.md`, `chapters/*.md`,
-  both general and theology supporting files, and `book-index.json`. Findings
+  both general and theology supporting files, `book-index.json`, and
+  `claim-index.json`. Findings
   name only the rule and file location — never the matched text.
 - **CI** — CodeQL, Bandit (gate on HIGH), Zizmor, and dependency CVE review on PRs.
 

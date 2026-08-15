@@ -15,6 +15,7 @@ from book_to_skill.config import (
     OUTPUT_DIR,
     OUTPUT_TEXT,
     OUTPUT_META,
+    OUTPUT_SEGMENTS,
     WORDS_PER_TOKEN,
     SUPPORTED_EXTENSIONS,
     TEXT_EXTENSIONS,
@@ -45,6 +46,7 @@ from book_to_skill.parsers.epub import (
     count_epub_chapters,
 )
 from book_to_skill.sanitize import sanitize_extracted_text
+from book_to_skill.provenance import build_extracted_source, render_segments_document
 
 
 def estimate_tokens(text: str) -> int:
@@ -407,7 +409,13 @@ def resolve_input_files(paths: list[str]) -> list[Path]:
     return unique_paths
 
 
-def extract_single_file(input_path: Path, extraction_mode: str, install_mode: str) -> dict:
+def extract_single_file(
+    input_path: Path,
+    extraction_mode: str,
+    install_mode: str,
+    *,
+    source_id: str = "source-01",
+) -> dict:
     """Extract text and metadata from a single file path."""
     input_str = str(input_path)
     
@@ -581,9 +589,18 @@ def extract_single_file(input_path: Path, extraction_mode: str, install_mode: st
     tokens = estimate_tokens(text)
     structure = detect_structure(text)
     file_size_mb = os.path.getsize(input_str) / (1024 * 1024)
+    provenance = build_extracted_source(
+        path=input_path,
+        source_id=source_id,
+        document_format=document_format,
+        extraction_method=method,
+        text=text,
+    )
     
     return {
-        "source_file": str(input_path.resolve()),
+        # ``source_file`` is deliberately only the portable filename.  Input
+        # paths may contain usernames and must never reach generated artifacts.
+        "source_file": input_path.name,
         "filename": input_path.name,
         "format": document_format,
         "extraction_method": method,
@@ -595,6 +612,7 @@ def extract_single_file(input_path: Path, extraction_mode: str, install_mode: st
         "words": len(text.split()),
         "estimated_tokens": tokens,
         "text": text,
+        "provenance": provenance,
         **structure,
     }
 
@@ -641,7 +659,12 @@ def main():
     
     for file_path in input_files:
         try:
-            res = extract_single_file(file_path, extraction_mode, install_mode)
+            res = extract_single_file(
+                file_path,
+                extraction_mode,
+                install_mode,
+                source_id=f"source-{len(extracted_sources) + 1:02d}",
+            )
         except ExtractionError as exc:
             print(f"WARNING: Skipping {file_path.name}: {exc}", file=sys.stderr)
             errors.append((file_path, str(exc)))
@@ -649,7 +672,7 @@ def main():
         extracted_sources.append(res)
         
         # Format the text with a clear boundary
-        separator = f"\n\n{'=' * 80}\nSOURCE: {res['filename']} (Path: {res['source_file']})\n{'=' * 80}\n\n"
+        separator = f"\n\n{'=' * 80}\nSOURCE: {res['filename']}\n{'=' * 80}\n\n"
         combined_texts.append(separator + res["text"])
     
     if not extracted_sources:
@@ -712,6 +735,15 @@ def main():
     }
     
     OUTPUT_META.write_text(json.dumps(metadata, indent=2, ensure_ascii=False))
+    OUTPUT_SEGMENTS.write_text(
+        json.dumps(
+            render_segments_document(src["provenance"] for src in extracted_sources),
+            indent=2,
+            ensure_ascii=False,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     
     page_line = f"   Total Pages: {total_pages}"
     print("\nExtraction complete:")
@@ -729,6 +761,7 @@ def main():
         )
     print(f"\n   Text -> {OUTPUT_TEXT}")
     print(f"   Meta -> {OUTPUT_META}")
+    print(f"   Segments -> {OUTPUT_SEGMENTS}")
     if errors:
         print(f"\n   WARNING: {len(errors)} source(s) skipped due to errors:")
         for path, err in errors:

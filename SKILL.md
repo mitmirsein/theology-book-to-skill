@@ -415,6 +415,14 @@ global catalog's source of truth.
 
 Create `$SKILLS_HOME/<skill_name>/chapters/ch<NN>-<slug>.md` using the appropriate structure below based on `LENS_TYPE`.
 
+Alongside each chapter summary, extract **3–8 atomic claim candidates**. A
+claim records the author's own argument, not a keyword, a chapter summary, or
+the generator's theological application. Give every claim at least one short,
+portable evidence locator from `segments.json` (PDF page index, EPUB spine
+item, or heading/line range). Do not copy long source passages. A candidate
+without a locator remains `generated`; promote it to `source-checked` only
+after rereading the located source segment.
+
 **If `LENS_TYPE=general` (Default) or `LENS_TYPE=philosophy` (Fallback to general for now):**
 **Adapt emphasis based on `BOOK_TYPE`:**
 - `technical` → prioritize "Code Examples", "Reference Tables", and "Commands & APIs" sections; preserve exact syntax
@@ -657,6 +665,22 @@ projection frontmatter against its manifest IDs, including chapter number,
 book ID, title, tags, loci, scriptures, and persons. YAML parsing is not the
 catalog's SSOT; it is only a consistency check.
 
+## Step 9.3a — Write and validate the optional claim index
+
+For evidence-backed books, write `$SKILLS_HOME/<skill_name>/claim-index.json`
+without changing `book-index.json` v1. Its root keys are exactly
+`schema_version`, `book_id`, `sources`, and `claims`.
+
+- Store source filename, format, SHA-256, and locator scheme; never store an
+  absolute input path.
+- A claim must reference a manifest chapter, use canonical tags/facets, have a
+  unique ID, and contain one or more source evidence records.
+- Use only `generated`, `source-checked`, or `human-reviewed` verification.
+  The latter two require every evidence record to have been source-checked.
+- Run `book_to_skill.claims.load_claim_index()` (or the claim-catalog builder's
+  `--check`) before reporting the book complete. Treat taxonomy-drift warnings
+  as a review task, not as permission to invent an alias.
+
 ## Step 9.4 — Self-Verification & Integrity Checklist
 
 Before running scanner or reporting completion, perform a self-audit against the generated skill files:
@@ -666,12 +690,15 @@ Before running scanner or reporting completion, perform a self-audit against the
 3. **Styling Consistency**: Ensure all Korean text across `SKILL.md` and all generated files strictly ends with concise noun forms (개조식 종결: 음/함/임) rather than conversational polite verb forms (습니다/합니다).
 4. **Manifest Coverage Audit**: Ensure `book-index.json` contains every chapter file exactly once, every referenced path resolves inside the book, and removing a chapter or tag from the current files removes it from the manifest before rebuilding.
 5. **Projection Consistency Audit**: Compare each chapter's simple frontmatter fields with the manifest. Do not treat a stale `#PascalCase` alias as an additional canonical tag.
+6. **Claim Evidence Audit**: If `claim-index.json` exists, every claim must
+   resolve to a declared source and chapter. Do not present a `generated` claim
+   as confirmed research evidence.
 
 **If `LENS_TYPE=theology`:**
-6. **Core Arguments Coverage**: Check `core_arguments.md` to verify that **every single chapter (ch00 through chN)** has its corresponding core argument(s) listed. Do NOT skip any chapter sequence.
-7. **Lexicon Synchronization**: Verify that all key original language terms (Hebrew/Greek/Latin) and author-specific terminology from every chapter are captured in `lexicon.md`.
-8. **Methodology Completeness**: Verify that `methodology.md` accurately documents all primary analytical and exegetical methods used by the author.
-9. **No Secondary Processing (SSOT Purity)**: Ensure no 2nd-stage application files (e.g., `dogmatic_loci.md`, `sermon_seeds.md`) are generated. This skill MUST remain a pure 1st-stage extraction of the author's original work without arbitrary theological mapping or homiletic applications.
+7. **Core Arguments Coverage**: Check `core_arguments.md` to verify that **every single chapter (ch00 through chN)** has its corresponding core argument(s) listed. Do NOT skip any chapter sequence.
+8. **Lexicon Synchronization**: Verify that all key original language terms (Hebrew/Greek/Latin) and author-specific terminology from every chapter are captured in `lexicon.md`.
+9. **Methodology Completeness**: Verify that `methodology.md` accurately documents all primary analytical and exegetical methods used by the author.
+10. **No Secondary Processing (SSOT Purity)**: Ensure no 2nd-stage application files (e.g., `dogmatic_loci.md`, `sermon_seeds.md`) are generated. This skill MUST remain a pure 1st-stage extraction of the author's original work without arbitrary theological mapping or homiletic applications.
 
 ---
 
@@ -686,7 +713,7 @@ SKILL_CONVERTER_ROOT="$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd)"
 
 The scanner covers `SKILL.md`, all chapter files, both sets of lens supporting
 files (`glossary`/`patterns`/`cheatsheet` and `lexicon`/`core_arguments`/
-`methodology`), and `book-index.json`. It validates the manifest JSON before
+`methodology`), `book-index.json`, and `claim-index.json`. It validates JSON before
 scanning its labels and titles as untrusted text. If it exits non-zero, stop
 and ask a human to review its file/line findings. Do not silently rewrite the
 generated files, and do not load or publish the skill until the findings are
@@ -710,6 +737,18 @@ The builder discovers every direct child containing `SKILL.md`, requires its
 `book-index.json`, validates every manifest, and atomically replaces
 `INDEX.md` and `catalog.json`. It is deterministic and stores no timestamps or
 absolute paths. `--check` performs the same validation without writing.
+
+When books have claim indexes, build the separate derived claim catalog only
+after the same scan succeeds:
+
+```bash
+"$PYTHON_BIN" "$SKILL_CONVERTER_ROOT/tools/build_claim_catalog.py" \
+  --books-root "$SKILLS_HOME"
+```
+
+This preserves un-migrated books as `missing` status, excludes `generated`
+claims from retrieval by default, and atomically replaces only
+`claim-catalog.json` after every discovered claim index validates.
 
 ---
 

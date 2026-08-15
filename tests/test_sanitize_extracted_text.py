@@ -75,11 +75,13 @@ def test_main_writes_only_sanitized_text_and_metrics(tmp_path, monkeypatch):
     output_dir = tmp_path / "output"
     output_text = output_dir / "full_text.txt"
     output_meta = output_dir / "metadata.json"
+    output_segments = output_dir / "segments.json"
 
     monkeypatch.setattr(sys, "argv", ["extract.py", str(source)])
     monkeypatch.setattr("book_to_skill.utils.OUTPUT_DIR", output_dir)
     monkeypatch.setattr("book_to_skill.utils.OUTPUT_TEXT", output_text)
     monkeypatch.setattr("book_to_skill.utils.OUTPUT_META", output_meta)
+    monkeypatch.setattr("book_to_skill.utils.OUTPUT_SEGMENTS", output_segments)
     monkeypatch.setattr("book_to_skill.utils.prepare_dependencies", lambda *args: None)
 
     main()
@@ -93,3 +95,4 @@ def test_main_writes_only_sanitized_text_and_metrics(tmp_path, monkeypatch):
     assert all(character not in extracted for character in INVISIBLE_CODEPOINTS)
     assert metadata["chars"] == len(extracted)
     assert metadata["sources"][0]["chars"] == len(expected_source)
+    assert output_segments.exists()

@@ -351,9 +351,11 @@ class TestBatchResilience:
         # So we patch the OUTPUT_* in utils directly
         out_text = out_dir / "full_text.txt"
         out_meta = out_dir / "metadata.json"
+        out_segments = out_dir / "segments.json"
         monkeypatch.setattr("book_to_skill.utils.OUTPUT_DIR", out_dir)
         monkeypatch.setattr("book_to_skill.utils.OUTPUT_TEXT", out_text)
         monkeypatch.setattr("book_to_skill.utils.OUTPUT_META", out_meta)
+        monkeypatch.setattr("book_to_skill.utils.OUTPUT_SEGMENTS", out_segments)
         monkeypatch.setattr("book_to_skill.utils.prepare_dependencies", lambda *a: None)
 
         main()
@@ -386,6 +388,7 @@ class TestBatchResilience:
         out_dir = tmp_path / "output"
         out_text = out_dir / "full_text.txt"
         out_meta = out_dir / "metadata.json"
+        out_segments = out_dir / "segments.json"
         real_extract = extract_single_file
 
         def extract_with_reported_source(*args, **kwargs):
@@ -397,6 +400,7 @@ class TestBatchResilience:
         monkeypatch.setattr("book_to_skill.utils.OUTPUT_DIR", out_dir)
         monkeypatch.setattr("book_to_skill.utils.OUTPUT_TEXT", out_text)
         monkeypatch.setattr("book_to_skill.utils.OUTPUT_META", out_meta)
+        monkeypatch.setattr("book_to_skill.utils.OUTPUT_SEGMENTS", out_segments)
         monkeypatch.setattr("book_to_skill.utils.prepare_dependencies", lambda *a: None)
         monkeypatch.setattr(
             "book_to_skill.utils.extract_single_file", extract_with_reported_source
