@@ -40,6 +40,25 @@ uv sync --all-extras
 uv run book-to-skill path/to/book.pdf
 ```
 
+## 포함된 공개 스킬
+
+이 저장소에는 개별 도서 생성물 없이, 공개 설치 가능한 두 에이전트 스킬이 함께 포함됨.
+
+| 스킬 | 역할 |
+| --- | --- |
+| [book-to-skill](skills/book-to-skill/SKILL.md) | 허용된 신학·철학 도서를 출처 추적형 연구 스킬로 변환함 |
+| [book-research](skills/book-research/SKILL.md) | 여러 도서 스킬의 검증된 주장을 비교하고 연구 패킷을 작성함 |
+
+호스트의 개인 스킬 폴더에 두 디렉터리를 복사한 뒤, 이 프로젝트의 체크아웃 위치를 사용자가 제공하거나 `THEOLOGY_BOOK_TO_SKILL_ROOT`로 지정하면 됨.
+
+```bash
+cp -R skills/book-to-skill ~/.claude/skills/
+cp -R skills/book-research ~/.claude/skills/
+export THEOLOGY_BOOK_TO_SKILL_ROOT="$PWD"
+```
+
+다른 Agent Skills 호스트를 쓴다면 해당 호스트의 개인 스킬 루트에 같은 두 디렉터리를 복사함. 스킬은 프로젝트 루트를 탐색하고, 찾지 못하면 경로를 요청하도록 작성됨.
+
 생성된 도서 디렉터리에서는 주장 카탈로그를 만들고 질의할 수 있음.
 
 ```bash
@@ -66,7 +85,7 @@ docs/                아키텍처와 운영 문서
 SKILL.md             연구 스킬 생성용 에이전트 워크플로
 ```
 
-특화 연구 스킬의 정본은 이 저장소에 복제하지 않고 별도의 정본 스킬 라이브러리에서 관리함. 변환기는 독립적으로 쓸 수 있게 유지하면서 워크플로의 단일 정본을 보장하기 위함임.
+이 공개판의 두 배포 스킬은 프로젝트와 함께 버전 관리됨. 사용자의 개인 전역 스킬 라이브러리와 개별 도서 생성물은 별도로 유지해도 됨.
 
 ## 원본 프로젝트에 대한 감사
 

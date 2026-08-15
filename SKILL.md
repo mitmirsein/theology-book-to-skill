@@ -66,13 +66,10 @@ Four paths available. Route based on what the user asks:
 
 This converter can run from multiple skill systems. When looking for this converter's helper script or writing the generated book skill, prefer these locations in order:
 
-1. Canonical MS_Dev workspace skills: `~/Desktop/MS_Dev.nosync/.skills/books/` (real directory, Syncthing synced)
-2. Claude Code personal skills: `~/.claude/skills/books/`
-3. Cross-agent personal skills (Copilot + Amp): `~/.agents/skills/books/`
-4. GitHub Copilot CLI personal skills: `~/.copilot/skills/books/`
-5. Project-local Claude / Amp skills: `.claude/skills/books/` or `.agents/skills/books/`
+1. A user-selected personal skill root for the active host agent
+2. A user-selected project-local skill root
 
-For **generated** book skills, store them inside the real directory `~/Desktop/MS_Dev.nosync/.skills/books/<slug>/` so all book/document skills are real files synced across machines via Syncthing.
+If more than one candidate root exists, ask the user which one should receive generated skills. Do not assume a machine-specific workspace, synchronization setup, or username.
 
 ---
 
@@ -333,9 +330,9 @@ Choose the destination skill root (`SKILLS_HOME`). Probe the user's filesystem f
 
 | Host agent | Personal skill root (probe in order) | Project-local root |
 |---|---|---|
-| **Claude Code / Antigravity** | `~/Desktop/MS_Dev.nosync/.skills/books` → `~/.claude/skills/books` | `.skills/books` → `.claude/skills/books` |
-| **GitHub Copilot CLI** | `~/Desktop/MS_Dev.nosync/.skills/books` → `~/.copilot/skills/books` | `.github/skills/books` → `.agents/skills/books` |
-| **Amp** | `~/Desktop/MS_Dev.nosync/.skills/books` → `~/.agents/skills/books` | `.agents/skills/books` |
+| **Claude Code / Antigravity** | `~/.claude/skills/books` | `.claude/skills/books` |
+| **GitHub Copilot CLI** | `~/.copilot/skills/books` | `.github/skills/books` |
+| **Amp** | `~/.agents/skills/books` | `.agents/skills/books` |
 
 Selection rules:
 1. If **exactly one** of the host's candidate roots exists on disk, use it without asking.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Theology Book to Skill"
+  short_description: "Convert theology and philosophy books into research skills."
+  default_prompt: "Use $book-to-skill to turn my theology or philosophy source into an evidence-aware skill."

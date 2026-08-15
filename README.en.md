@@ -40,6 +40,25 @@ uv sync --all-extras
 uv run book-to-skill path/to/book.pdf
 ```
 
+## Included public skills
+
+This repository includes two installable agent skills and no generated book content.
+
+| Skill | Role |
+| --- | --- |
+| [book-to-skill](skills/book-to-skill/SKILL.md) | Convert permitted theology and philosophy sources into traceable research skills |
+| [book-research](skills/book-research/SKILL.md) | Compare verified claims across book skills and write a research packet |
+
+Copy both directories into your host's personal skills directory, then provide the project checkout path or set `THEOLOGY_BOOK_TO_SKILL_ROOT`.
+
+```bash
+cp -R skills/book-to-skill ~/.claude/skills/
+cp -R skills/book-research ~/.claude/skills/
+export THEOLOGY_BOOK_TO_SKILL_ROOT="$PWD"
+```
+
+For another Agent Skills host, copy the same directories to that host's personal skills root. The skills search for the project root and ask for its path when it cannot be found.
+
 Build and query a claim catalog for a generated books directory:
 
 ```bash
@@ -66,7 +85,7 @@ docs/                architecture and operating documentation
 SKILL.md             agent workflow for generating research skills
 ```
 
-The specialized research skill is maintained in the canonical skills library rather than duplicated here. This keeps one authoritative workflow while the converter remains independently usable.
+The two public distribution skills are versioned with this project. A user's personal global skills library and generated book content can remain separate.
 
 ## Upstream acknowledgement
 

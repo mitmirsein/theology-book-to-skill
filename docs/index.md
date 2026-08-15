@@ -12,7 +12,7 @@ Turn any book or document into a structured, on-demand agent skill — named fra
 
 [Get started](guide.md){ .md-button .md-button--primary }
 [Skill reference](skill-reference.md){ .md-button }
-[GitHub](https://github.com/virgiliojr94/book-to-skill){ .md-button }
+[GitHub](https://github.com/mitmirsein/theology-book-to-skill){ .md-button }
 
 ---
 
@@ -55,9 +55,11 @@ Turn any book or document into a structured, on-demand agent skill — named fra
 **As an agent skill** (gives you the `/book-to-skill` command in Claude Code, Copilot CLI, Amp):
 
 ```bash
-git clone https://github.com/virgiliojr94/book-to-skill.git ~/.claude/skills/book-to-skill
-# then, in your agent session:
-/book-to-skill /path/to/book.pdf [skill-name]
+git clone https://github.com/mitmirsein/theology-book-to-skill.git
+cd theology-book-to-skill
+cp -R skills/book-to-skill ~/.claude/skills/
+cp -R skills/book-research ~/.claude/skills/
+export THEOLOGY_BOOK_TO_SKILL_ROOT="$PWD"
 ```
 
 **As a standalone CLI** (just the text extractor, optional):

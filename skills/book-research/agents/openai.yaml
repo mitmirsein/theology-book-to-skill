@@ -1,0 +1,4 @@
+interface:
+  display_name: "Theology Book Research"
+  short_description: "Compare evidence-backed claims across theology books."
+  default_prompt: "Use $book-research to compare source-checked claims across my book skills."
